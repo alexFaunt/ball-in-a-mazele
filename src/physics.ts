@@ -303,8 +303,8 @@ export function updateBall(
 
   // Check other holes
   for (const hole of maze.holes) {
-    const holeX = (hole.x + 0.5) * cellSize;
-    const holeY = (hole.y + 0.5) * cellSize;
+    const holeX = (hole.x + 0.5 + (hole.offsetX || 0)) * cellSize;
+    const holeY = (hole.y + 0.5 + (hole.offsetY || 0)) * cellSize;
     const distToHole = Math.sqrt(
       (ball.x - holeX) ** 2 + (ball.y - holeY) ** 2
     );

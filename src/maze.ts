@@ -12,8 +12,10 @@ export interface Cell {
 }
 
 export interface Hole {
-  x: number;
-  y: number;
+  x: number; // Cell x coordinate
+  y: number; // Cell y coordinate
+  offsetX?: number; // Random offset from center (-0.3 to 0.3)
+  offsetY?: number; // Random offset from center (-0.3 to 0.3)
 }
 
 export interface Maze {
@@ -106,18 +108,60 @@ export function generateMaze(seed: number, size: number, holeCount: number): Maz
   usedPositions.add(key(0, 0)); // Start
   usedPositions.add(key(size - 1, size - 1)); // Goal
 
+  const isAdjacentWithoutWall = (x1: number, y1: number, x2: number, y2: number): boolean => {
+    // Check if cells are adjacent (horizontally or vertically)
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+
+    if (!((dx === 1 && dy === 0) || (dx === 0 && dy === 1))) {
+      return false; // Not adjacent
+    }
+
+    // Check if there's a wall between them
+    if (x2 === x1 + 1) {
+      // x2 is to the east of x1
+      return !cells[y1][x1].walls.east;
+    } else if (x2 === x1 - 1) {
+      // x2 is to the west of x1
+      return !cells[y1][x1].walls.west;
+    } else if (y2 === y1 + 1) {
+      // y2 is to the south of y1
+      return !cells[y1][x1].walls.south;
+    } else if (y2 === y1 - 1) {
+      // y2 is to the north of y1
+      return !cells[y1][x1].walls.north;
+    }
+
+    return false;
+  };
+
   while (holes.length < holeCount) {
     const x = rng.nextInt(size);
     const y = rng.nextInt(size);
     const pos = key(x, y);
 
-    if (!usedPositions.has(pos)) {
-      holes.push({ x, y });
+    if (usedPositions.has(pos)) continue;
+
+    // Check if adjacent to any existing hole without a wall between
+    let hasAdjacentHole = false;
+    for (const hole of holes) {
+      if (isAdjacentWithoutWall(x, y, hole.x, hole.y)) {
+        hasAdjacentHole = true;
+        break;
+      }
+    }
+
+    if (!hasAdjacentHole) {
+      // Random offset from center (max 0.3 in each direction to avoid walls)
+      const offsetX = rng.nextFloat(-0.3, 0.3);
+      const offsetY = rng.nextFloat(-0.3, 0.3);
+
+      holes.push({ x, y, offsetX, offsetY });
       usedPositions.add(pos);
     }
   }
 
-  // Goal hole at bottom-right
+  // Goal hole at bottom-right (centered, no offset)
   const goal: Hole = { x: size - 1, y: size - 1 };
 
   return { size, cells, holes, goal };
