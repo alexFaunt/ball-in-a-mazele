@@ -44,24 +44,6 @@
       border: 2px solid #333;
     }
 
-    #orientation-btn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 20px 40px;
-      font-size: 18px;
-      background: #2d5;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      display: none;
-    }
-
-    #orientation-btn.show {
-      display: block;
-    }
 
     @media (orientation: landscape) and (max-width: 900px) {
       body::before {
@@ -87,9 +69,8 @@
 </head>
 <body>
   <h1>Ball in a Maze</h1>
-  <p class="instructions">Drag when you've got a mouse or tilt on mobile</p>
+  <p class="instructions">Drag to tilt the maze</p>
   <canvas id="canvas"></canvas>
-  <button id="orientation-btn">Enable Tilt Controls</button>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

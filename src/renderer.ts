@@ -189,7 +189,11 @@ export function render(
  */
 export function setupCanvas(canvas: HTMLCanvasElement, size: number): number {
   const dpr = window.devicePixelRatio || 1;
-  const maxSize = Math.min(window.innerWidth, window.innerHeight) * 0.95;
+
+  // Account for heading and instructions (roughly 80px on mobile, 100px on desktop)
+  const reservedHeight = 100;
+  const availableHeight = window.innerHeight - reservedHeight;
+  const maxSize = Math.min(window.innerWidth * 0.95, availableHeight * 0.95);
 
   const displaySize = Math.min(maxSize, 800);
   canvas.style.width = `${displaySize}px`;

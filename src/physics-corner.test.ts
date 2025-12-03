@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { updateBall, Ball, Config, InputState } from './physics';
-import { Maze } from './maze';
+import { Maze, Cell } from './maze';
 
 const createTestMaze = (size: number): Maze => {
-  const cells = [];
+  const cells: Cell[][] = [];
   for (let y = 0; y < size; y++) {
     cells[y] = [];
     for (let x = 0; x < size; x++) {

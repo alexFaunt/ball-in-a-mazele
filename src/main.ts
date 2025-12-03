@@ -65,31 +65,6 @@ function init() {
   // Setup input
   inputManager = new InputManager(canvas);
 
-  // Setup orientation button for mobile
-  const orientationBtn = document.getElementById('orientation-btn');
-  if (orientationBtn) {
-    // Check if we need to show the button (iOS 13+ or mobile)
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (
-      typeof (DeviceOrientationEvent as any).requestPermission === 'function'
-    ) {
-      orientationBtn.classList.add('show');
-    } else if (window.DeviceOrientationEvent && isMobile) {
-      // Auto-enable on non-iOS mobile devices
-      inputManager.enableOrientation();
-    }
-
-    orientationBtn.addEventListener('click', async () => {
-      const enabled = await inputManager.enableOrientation();
-      if (enabled) {
-        orientationBtn.classList.remove('show');
-      } else {
-        alert('Could not enable orientation controls');
-      }
-    });
-  }
-
   // Handle window resize
   window.addEventListener('resize', () => {
     cellSize = setupCanvas(canvas, CONFIG.GRID_SIZE);
