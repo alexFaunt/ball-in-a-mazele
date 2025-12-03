@@ -6,7 +6,7 @@ import { InputManager } from './input';
 
 // Configuration
 const CONFIG = {
-  GRID_SIZE: 10,
+  GRID_SIZE: 8,
   GRAVITY: 1200,
   FRICTION: 0.98,
   BALL_RADIUS_RATIO: 0.3,

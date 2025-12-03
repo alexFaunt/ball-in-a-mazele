@@ -25,6 +25,13 @@ export function render(
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
 
+  // Apply 3D tilt transform to canvas
+  const maxTilt = 15; // degrees
+  const rotateX = -input.tiltY * maxTilt;
+  const rotateY = input.tiltX * maxTilt;
+  ctx.canvas.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+
   // Clear canvas
   ctx.fillStyle = config.BG_COLOR;
   ctx.fillRect(0, 0, width, height);
