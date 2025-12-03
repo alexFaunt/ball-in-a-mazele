@@ -76,12 +76,13 @@ export function render(
   }
 
   // Draw goal hole
+  const goalRadius = cellSize * config.GOAL_RADIUS_RATIO;
   ctx.fillStyle = config.GOAL_COLOR;
   const goalX = (maze.goal.x + 0.5) * cellSize;
   const goalY = (maze.goal.y + 0.5) * cellSize;
 
   ctx.beginPath();
-  ctx.arc(goalX, goalY, holeRadius, 0, Math.PI * 2);
+  ctx.arc(goalX, goalY, goalRadius, 0, Math.PI * 2);
   ctx.fill();
 
   // Draw ball

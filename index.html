@@ -16,10 +16,25 @@
       height: 100vh;
       overflow: hidden;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       background: #1a1a1a;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      gap: 10px;
+    }
+
+    h1 {
+      color: #d4a760;
+      font-size: 32px;
+      margin: 0;
+    }
+
+    .instructions {
+      color: #888;
+      font-size: 14px;
+      margin: 0 0 10px 0;
     }
 
     canvas {
@@ -71,6 +86,8 @@
   </style>
 </head>
 <body>
+  <h1>Ball in a Maze</h1>
+  <p class="instructions">Drag when you've got a mouse or tilt on mobile</p>
   <canvas id="canvas"></canvas>
   <button id="orientation-btn">Enable Tilt Controls</button>
   <script type="module" src="/src/main.ts"></script>

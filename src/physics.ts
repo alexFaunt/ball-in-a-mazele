@@ -13,6 +13,7 @@ export interface Config {
   FRICTION: number;
   BALL_RADIUS_RATIO: number;
   HOLE_RADIUS_RATIO: number;
+  GOAL_RADIUS_RATIO: number;
 }
 
 export interface InputState {
@@ -23,6 +24,47 @@ export interface InputState {
 /**
  * Update ball physics based on tilt input
  */
+/**
+ * Check if circle collides with line segment
+ */
+function circleLineCollision(
+  cx: number, cy: number, radius: number,
+  x1: number, y1: number, x2: number, y2: number
+): { collides: boolean; nx?: number; ny?: number } {
+  // Find closest point on line segment to circle center
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSq = dx * dx + dy * dy;
+
+  if (lengthSq === 0) {
+    // Line segment is a point
+    const distSq = (cx - x1) * (cx - x1) + (cy - y1) * (cy - y1);
+    return { collides: distSq <= radius * radius };
+  }
+
+  // Project circle center onto line
+  let t = ((cx - x1) * dx + (cy - y1) * dy) / lengthSq;
+  t = Math.max(0, Math.min(1, t));
+
+  const closestX = x1 + t * dx;
+  const closestY = y1 + t * dy;
+
+  const distX = cx - closestX;
+  const distY = cy - closestY;
+  const distSq = distX * distX + distY * distY;
+
+  if (distSq <= radius * radius) {
+    const dist = Math.sqrt(distSq);
+    return {
+      collides: true,
+      nx: dist > 0 ? distX / dist : 0,
+      ny: dist > 0 ? distY / dist : 0,
+    };
+  }
+
+  return { collides: false };
+}
+
 export function updateBall(
   ball: Ball,
   input: InputState,
@@ -144,8 +186,109 @@ export function updateBall(
     ball.vy = 0;
   }
 
+  // Additional check: collision with all wall segments (handles corners/ends)
+  const minCellX = Math.max(0, Math.floor((ball.x - ballRadius) / cellSize));
+  const maxCellX = Math.min(maze.size - 1, Math.floor((ball.x + ballRadius) / cellSize));
+  const minCellY = Math.max(0, Math.floor((ball.y - ballRadius) / cellSize));
+  const maxCellY = Math.min(maze.size - 1, Math.floor((ball.y + ballRadius) / cellSize));
+
+  for (let cy = minCellY; cy <= maxCellY; cy++) {
+    for (let cx = minCellX; cx <= maxCellX; cx++) {
+      const cell = maze.cells[cy][cx];
+      const cellX = cx * cellSize;
+      const cellY = cy * cellSize;
+
+      // Check each wall as a line segment
+      if (cell.walls.north) {
+        const col = circleLineCollision(
+          ball.x, ball.y, ballRadius,
+          cellX, cellY, cellX + cellSize, cellY
+        );
+        if (col.collides && col.nx !== undefined && col.ny !== undefined) {
+          // Find distance from ball to closest point on line
+          const dx = cellX + cellSize - cellX;
+          const dy = cellY - cellY;
+          const t = Math.max(0, Math.min(1, ((ball.x - cellX) * dx + (ball.y - cellY) * dy) / (dx * dx + dy * dy)));
+          const closestX = cellX + t * dx;
+          const closestY = cellY + t * dy;
+          const dist = Math.sqrt((ball.x - closestX) ** 2 + (ball.y - closestY) ** 2);
+          const overlap = ballRadius - dist;
+          if (overlap > 0) {
+            ball.x += col.nx * overlap;
+            ball.y += col.ny * overlap;
+            ball.vy = 0;
+          }
+        }
+      }
+
+      if (cell.walls.south) {
+        const col = circleLineCollision(
+          ball.x, ball.y, ballRadius,
+          cellX, cellY + cellSize, cellX + cellSize, cellY + cellSize
+        );
+        if (col.collides && col.nx !== undefined && col.ny !== undefined) {
+          const dx = cellX + cellSize - cellX;
+          const dy = (cellY + cellSize) - (cellY + cellSize);
+          const t = Math.max(0, Math.min(1, ((ball.x - cellX) * dx + (ball.y - (cellY + cellSize)) * dy) / (dx * dx + dy * dy)));
+          const closestX = cellX + t * dx;
+          const closestY = cellY + cellSize + t * dy;
+          const dist = Math.sqrt((ball.x - closestX) ** 2 + (ball.y - closestY) ** 2);
+          const overlap = ballRadius - dist;
+          if (overlap > 0) {
+            ball.x += col.nx * overlap;
+            ball.y += col.ny * overlap;
+            ball.vy = 0;
+          }
+        }
+      }
+
+      if (cell.walls.west) {
+        const col = circleLineCollision(
+          ball.x, ball.y, ballRadius,
+          cellX, cellY, cellX, cellY + cellSize
+        );
+        if (col.collides && col.nx !== undefined && col.ny !== undefined) {
+          const dx = cellX - cellX;
+          const dy = cellY + cellSize - cellY;
+          const t = Math.max(0, Math.min(1, ((ball.x - cellX) * dx + (ball.y - cellY) * dy) / (dx * dx + dy * dy)));
+          const closestX = cellX + t * dx;
+          const closestY = cellY + t * dy;
+          const dist = Math.sqrt((ball.x - closestX) ** 2 + (ball.y - closestY) ** 2);
+          const overlap = ballRadius - dist;
+          if (overlap > 0) {
+            ball.x += col.nx * overlap;
+            ball.y += col.ny * overlap;
+            ball.vx = 0;
+          }
+        }
+      }
+
+      if (cell.walls.east) {
+        const col = circleLineCollision(
+          ball.x, ball.y, ballRadius,
+          cellX + cellSize, cellY, cellX + cellSize, cellY + cellSize
+        );
+        if (col.collides && col.nx !== undefined && col.ny !== undefined) {
+          const dx = (cellX + cellSize) - (cellX + cellSize);
+          const dy = cellY + cellSize - cellY;
+          const t = Math.max(0, Math.min(1, ((ball.x - (cellX + cellSize)) * dx + (ball.y - cellY) * dy) / (dx * dx + dy * dy)));
+          const closestX = cellX + cellSize + t * dx;
+          const closestY = cellY + t * dy;
+          const dist = Math.sqrt((ball.x - closestX) ** 2 + (ball.y - closestY) ** 2);
+          const overlap = ballRadius - dist;
+          if (overlap > 0) {
+            ball.x += col.nx * overlap;
+            ball.y += col.ny * overlap;
+            ball.vx = 0;
+          }
+        }
+      }
+    }
+  }
+
   // Check holes
   const holeRadius = cellSize * config.HOLE_RADIUS_RATIO;
+  const goalRadius = cellSize * config.GOAL_RADIUS_RATIO;
 
   // Check goal hole
   const goalX = (maze.goal.x + 0.5) * cellSize;
@@ -154,7 +297,7 @@ export function updateBall(
     (ball.x - goalX) ** 2 + (ball.y - goalY) ** 2
   );
 
-  if (distToGoal < holeRadius) {
+  if (distToGoal < goalRadius) {
     return { reset: false, won: true };
   }
 
