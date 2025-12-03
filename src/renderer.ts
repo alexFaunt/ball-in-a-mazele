@@ -19,7 +19,8 @@ export function render(
   input: InputState,
   config: RenderConfig,
   cellSize: number,
-  won: boolean
+  won: boolean,
+  message: string | null
 ) {
   const width = ctx.canvas.width;
   const height = ctx.canvas.height;
@@ -152,19 +153,31 @@ export function render(
   );
   ctx.fill();
 
-  // Win message
-  if (won) {
+  // Message display (win or oof)
+  if (won || message) {
+    const displayWidth = ctx.canvas.style.width ? parseFloat(ctx.canvas.style.width) : width;
+    const displayHeight = ctx.canvas.style.height ? parseFloat(ctx.canvas.style.height) : height;
+    const centerX = displayWidth / 2;
+    const centerY = displayHeight / 2;
+
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, height / 2 - 60, width, 120);
+    ctx.fillRect(0, centerY - 60, displayWidth, 120);
 
-    ctx.fillStyle = '#2d5';
-    ctx.font = 'bold 48px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('You Won!', width / 2, height / 2);
 
-    ctx.fillStyle = '#fff';
-    ctx.font = '20px sans-serif';
-    ctx.fillText("Tomorrow's maze at midnight UTC", width / 2, height / 2 + 40);
+    if (won) {
+      ctx.fillStyle = '#2d5';
+      ctx.font = 'bold 48px sans-serif';
+      ctx.fillText('You Won!', centerX, centerY);
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '20px sans-serif';
+      ctx.fillText("Tomorrow's maze at midnight UTC", centerX, centerY + 40);
+    } else if (message) {
+      ctx.fillStyle = '#f44';
+      ctx.font = 'bold 48px sans-serif';
+      ctx.fillText(message, centerX, centerY);
+    }
 
     ctx.textAlign = 'left';
   }

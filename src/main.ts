@@ -26,6 +26,8 @@ let cellSize: number;
 let inputManager: InputManager;
 let won = false;
 let lastTime = 0;
+let message: string | null = null;
+let messageEndTime = 0;
 
 /**
  * Initialize game
@@ -103,6 +105,11 @@ function gameLoop(time: number) {
   const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0;
   lastTime = time;
 
+  // Clear message if expired
+  if (message && time >= messageEndTime) {
+    message = null;
+  }
+
   if (!won) {
     // Update physics
     const input = inputManager.getInput();
@@ -111,6 +118,8 @@ function gameLoop(time: number) {
     if (result.won) {
       won = true;
     } else if (result.reset) {
+      message = 'oof';
+      messageEndTime = time + 1000;
       resetBall(ball, cellSize);
     }
   }
@@ -118,7 +127,7 @@ function gameLoop(time: number) {
   // Render
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
   const ctx = canvas.getContext('2d')!;
-  render(ctx, maze, ball, inputManager.getInput(), CONFIG, cellSize, won);
+  render(ctx, maze, ball, inputManager.getInput(), CONFIG, cellSize, won, message);
 
   requestAnimationFrame(gameLoop);
 }
