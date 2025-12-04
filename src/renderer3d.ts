@@ -20,8 +20,9 @@ export class Renderer3D {
   private goalMesh: THREE.Mesh;
   private basePlane: THREE.Mesh;
   private mazeGroup: THREE.Group;
+  private ballRadius: number = 0;
 
-  constructor(private canvas: HTMLCanvasElement, private cellSize: number) {
+  constructor(canvas: HTMLCanvasElement, private cellSize: number) {
     // Scene
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color('#1a1a1a');
@@ -151,8 +152,8 @@ export class Renderer3D {
     this.mazeGroup.add(this.goalMesh);
 
     // Create ball
-    const ballRadius = this.cellSize * config.BALL_RADIUS_RATIO;
-    const ballGeometry = new THREE.SphereGeometry(ballRadius, 32, 32);
+    this.ballRadius = this.cellSize * config.BALL_RADIUS_RATIO;
+    const ballGeometry = new THREE.SphereGeometry(this.ballRadius, 32, 32);
     const ballMaterial = new THREE.MeshStandardMaterial({ color: config.BALL_COLOR });
     this.ballMesh = new THREE.Mesh(ballGeometry, ballMaterial);
     this.mazeGroup.add(this.ballMesh);
@@ -164,8 +165,7 @@ export class Renderer3D {
 
   render(ball: Ball, input: InputState) {
     // Update ball position
-    const ballRadius = this.ballMesh.geometry.parameters.radius;
-    this.ballMesh.position.set(ball.x, ballRadius, ball.y);
+    this.ballMesh.position.set(ball.x, this.ballRadius, ball.y);
 
     // Apply tilt to maze group
     const maxTilt = 0.15; // radians (~8.6 degrees)
