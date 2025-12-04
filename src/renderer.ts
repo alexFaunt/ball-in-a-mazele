@@ -126,8 +126,8 @@ export function render(
 
   // Draw tilt debug indicator
   ctx.fillStyle = '#fff';
-  ctx.font = '14px monospace';
-  ctx.fillText(`Tilt X: ${input.tiltX.toFixed(2)} | Y: ${input.tiltY.toFixed(2)}`, 10, 20);
+  // ctx.font = '14px monospace';
+  // ctx.fillText(`Tilt X: ${input.tiltX.toFixed(2)} | Y: ${input.tiltY.toFixed(2)}`, 10, 20);
 
   // Draw crosshair showing tilt direction
   const crosshairX = width - 60;
